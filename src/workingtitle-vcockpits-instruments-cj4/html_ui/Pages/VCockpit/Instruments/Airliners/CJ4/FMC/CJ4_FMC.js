@@ -428,6 +428,21 @@ class CJ4_FMC extends FMCMainDisplay {
             });
         });
     }
+    // function to set approach index
+    setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
+        this.ensureCurrentFlightPlanIsTemporary(() => {
+            this.flightPlanManager.setApproachIndex(approachIndex, () => {
+                let approach = this.flightPlanManager.getApproach();
+                if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
+                    let runway = this.flightPlanManager.getApproachRunway();
+                    if (runway) {
+                        SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_COURSE", "number", runway.direction);
+                    }
+                }
+                callback(true);
+            });
+        });
+    }
 
     updateAutopilot(dt) {
         if (isFinite(dt)) {
