@@ -213,6 +213,7 @@ class CJ4_FMC extends FMCMainDisplay {
         this.updateCabinLights();
         this.updatePersistentHeading();
         this.updateAlerters(dt);
+        this.updateAutoTuneLocalizer();
         this._frameUpdates++;
         if (this._frameUpdates > 64000) this._frameUpdates = 0;
     }
@@ -765,6 +766,18 @@ class CJ4_FMC extends FMCMainDisplay {
                     this._altAlertState = CJ4_FMC.ALTALERT_STATE.NONE;
                 }
                 break;
+        }
+    }
+    updateAutoTuneLocalizer() {
+        if (this._frameUpdates % 100 == 99) {
+            const navSensitivity = SimVar.GetSimVarValue('L:WT_NAV_SENSITIVITY', 'number');
+            if (navSensitivity == 1) {
+                let freq = this.flightPlanManager.getApproachNavFrequency();
+                if (!isNaN(freq)) {
+                    freq = Math.round(freq * 100) / 100;
+                    this.connectIlsFrequency(freq);
+                }
+            }
         }
     }
 }
