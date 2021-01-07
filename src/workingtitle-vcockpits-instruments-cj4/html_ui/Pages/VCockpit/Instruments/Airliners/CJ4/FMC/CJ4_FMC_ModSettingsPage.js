@@ -31,6 +31,7 @@ class CJ4_FMC_ModSettingsPageOne {
 
         this._fpSync = WTDataStore.get('WT_CJ4_FPSYNC', 0);
 
+        this._fdrEnabled = SimVar.GetSimVarValue("L:FLIGHT_DATA_RECORDER_ENABLED", "number") == 1;
     }
 
     get lightMode() { return this._lightMode; }
@@ -103,6 +104,17 @@ class CJ4_FMC_ModSettingsPageOne {
         this.invalidate();
     }
 
+    get flightDataRecorderEnabled() { return this._fdrEnabled; }
+    set flightDataRecorderEnabled(value) {
+        if (value == 2) value = 0;
+        this._fdrEnabled = value;
+
+        // set simvar
+        SimVar.SetSimVarValue("L:FLIGHT_DATA_RECORDER_ENABLED", "number", value);
+
+        this.invalidate();
+    }
+
     render() {
         let lightSwitch = this._fmc._templateRenderer.renderSwitch(["OFF", "DIM", "ON"], this.lightMode);
         let pilotIdDisplay = (this.pilotId !== this._pilotDefault) ? this.pilotId + "[green]" : this._pilotDefault;
@@ -110,6 +122,7 @@ class CJ4_FMC_ModSettingsPageOne {
         let gpuSettingSwitch = this._fmc._templateRenderer.renderSwitch(["OFF", "ON"], this.gpuSetting);
         let yokeHideSwitch = this._fmc._templateRenderer.renderSwitch(["NO", "YES"], this.yokeHide);
         let fpSyncSwitch = this._fmc._templateRenderer.renderSwitch(["OFF", "ON"], this.fpSync);
+        let flightDataRecorderEnabled = this._fmc._templateRenderer.renderSwitch(["OFF", "ON"], this.flightDataRecorderEnabled);
 
         if (!this._gpuAvailable) {
             gpuSettingSwitch = "NO EXT PWR[disabled]";
@@ -125,8 +138,8 @@ class CJ4_FMC_ModSettingsPageOne {
             [unitsSwitch],
             [" GROUND POWER UNIT[blue]"],
             [gpuSettingSwitch],
-            [" HIDE YOKE[blue]"],
-            [yokeHideSwitch, ""],
+            [" HIDE YOKE[blue]", "FDR[blue]"],
+            [yokeHideSwitch, flightDataRecorderEnabled],
             [""],
             ["< BACK", ""]
         ]);
@@ -144,6 +157,7 @@ class CJ4_FMC_ModSettingsPageOne {
         this._fmc.onLeftInput[3] = () => { if (this._gpuAvailable) this.gpuSetting = this.gpuSetting + 1; };
         this._fmc.onLeftInput[4] = () => { this.yokeHide = this.yokeHide + 1; };
         this._fmc.onLeftInput[5] = () => { CJ4_FMC_InitRefIndexPage.ShowPage2(this._fmc); };
+        this._fmc.onRightInput[4] = () => { this.flightDataRecorderEnabled = this.flightDataRecorderEnabled + 1; };
     }
 
     invalidate() {
